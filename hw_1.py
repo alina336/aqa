@@ -1,5 +1,6 @@
-from typing import List,Dict
+from typing import List, Dict
 from collections import Counter
+
 '''
 HW_2
 1) Написать функцию, которая принимает любое количество слов и считает сколько раз это слово повторилось,
@@ -13,9 +14,8 @@ coding="I like coding", powerful="Python is powerful")
 
 
 # 1
-def words_count():
-    words = list(map(str, input("Введите слова через запятую: ").split(',')))
-    result_dict={}
+def words_count(words):
+    result_dict = {}
     for word in words:
         if word not in result_dict:
             result_dict[word] = 1
@@ -26,10 +26,11 @@ def words_count():
     #     result_dict[word] = result_dict.get(word,0)+1
 
     # result_dict = Counter(words_list)
-    print(result_dict)
+    return result_dict
 
 
-words_count()
+words = ['one', 'two', 'three', 'four', 'two', 'four', 'two']
+print(words_count(words))
 
 # 2
 list1 = [1, 2, 4]
@@ -37,26 +38,23 @@ list2 = [4, 3, 3, 6, 7, 8, 0]
 
 
 def unique(*lists):
-    uniq_list = []
-    for lst in lists:
-        for num in lst:
-            if num not in uniq_list:
-                uniq_list.append(num)
-            else:
-                continue
-    print(*uniq_list, sep=',')
+    uniq = set()
+    for l in lists:
+        uniq.update(l)
+    return uniq
 
-
-unique(list1, list2)
+print(unique(list1, list2))
 
 
 # 3
 def analyze_phrases(**kwargs):
     result = {}
     for k, v in kwargs.items():
-        result[k] = (v, len(v))
-    print(result)
+        result[k] = (len(v), len(v.split()))
+    return result
 
 
 phrases_dict = analyze_phrases(greeting="Hello World", python_fun="Python is fun",
                                coding="I like coding", powerful="Python is powerful")
+
+print(phrases_dict)
