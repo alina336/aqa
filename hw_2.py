@@ -31,7 +31,7 @@ class Vehicle:
         self._speed = speed
 
     def get_info(self):
-        print(f"Марка транспортного средства: {self._brand}. Максимально возможная скорость: {self._speed} км/ч")
+        return f"Марка транспортного средства: {self._brand}. Максимально возможная скорость: {self._speed} км/ч"
 
     @property
     def brand(self):
@@ -57,11 +57,11 @@ class Car(Vehicle):
         self.get_info()
 
     def get_info(self):
-        super().get_info()
-        print(f"Количество мест: {self.seats}")
+        base_info = super().get_info()
+        return f"{base_info}. Количество мест: {self.seats}"
 
     def trip_cost(self, distance):
-        print(f"Стоимость поездки: {(distance * 0.1):.2f} руб.")
+        return f"Стоимость поездки: {(distance * 0.1):.2f} руб."
 
 
 class Bus(Vehicle):
@@ -71,11 +71,11 @@ class Bus(Vehicle):
         self.get_info()
 
     def get_info(self):
-        super().get_info()
-        print(f"Вместимость пассажиров: {self.capacity}")
+        base_info = super().get_info()
+        return f"{base_info}. Вместимость пассажиров: {self.capacity}"
 
     def trip_cost(self, distance):
-        print(f"Стоимость поездки: {(distance * 0.05 * self.capacity):.2f} руб.")
+        return f"Стоимость поездки: {(distance * 0.05 * self.capacity):.2f} руб."
 
 
 class Bike(Vehicle):
@@ -85,11 +85,11 @@ class Bike(Vehicle):
         self.get_info()
 
     def get_info(self):
-        super().get_info()
-        print(f"Тип велосипеда: {self.bike_type}")
+        base_info = super().get_info()
+        return f"{base_info}. Тип велосипеда: {self.bike_type}"
 
     def trip_cost(self, distance):
-        print(f"Стоимость поездки: {distance * 0} руб.")
+        return f"Стоимость поездки: {distance * 0} руб."
 
 
 car1 = Car("BMW", 220, 5)
@@ -98,7 +98,7 @@ bike1 = Bike("Lapierre", 40, "горный")
 print("-" * 30)
 
 for i in car1, bus1, bike1:
-    i.get_info()
-    i.trip_cost(100)
+    print(i.get_info())
+    print(i.trip_cost(100))
     print("-" * 30)
 
