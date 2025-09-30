@@ -1,0 +1,96 @@
+from petstore.http_client import HttpClient
+import time
+
+
+class PetClient(HttpClient):
+
+    def __init__(self):
+        super().__init__()
+        self.base_endpoint = "/pet"
+
+    def add_new_pet(self, **pet_data):
+        data = {}
+        pet_id = pet_data.get("id", 1)
+        if not isinstance(pet_id, int) or pet_id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        data["id"] = pet_id
+        category = pet_data.get("category", {"id": 0, "name": "category_unknown"})
+        if not isinstance(category, dict) or list(category.keys()) != ["id", "name"]:
+            raise ValueError("Категория должна быть словарем с ключами id и name.")
+        data["category"] = category
+        data["name"] = pet_data.get("name", "name_unknown")
+        data["photoUrls"] = pet_data.get("photoUrls", [])
+        tags = pet_data.get("tags", [])
+        if not isinstance(tags, list):
+            raise ValueError("Теги должны быть списком")
+        data["tags"] = tags
+        data["status"] = pet_data.get("status", "status_unknown")
+        return self.post(self.base_endpoint, json=data)
+
+    def update_pet(self, **pet_data):
+        data = {}
+        data = {}
+        pet_id = pet_data.get("id")
+        if not isinstance(pet_id, int) or pet_id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        data["id"] = pet_id
+        category = pet_data.get("category", {"id": 0, "name": "category_unknown"})
+        if not isinstance(category, dict) or list(category.keys()) != ["id", "name"]:
+            raise ValueError("Категория должна быть словарем с ключами id и name.")
+        data["category"] = category
+        data["name"] = pet_data.get("name", "name_unknown")
+        photo_urls = pet_data.get("photoUrls", [])
+        if not isinstance(photo_urls, list) or list(category.keys()) != ["id", "name"]:
+            raise ValueError("Необходимо ввести список строк со ссылками на фото.")
+        data["photoUrls"] = photo_urls
+        tags = pet_data.get("tags", [])
+        data["tags"] = tags
+        data["status"] = pet_data.get("status", "status_unknown")
+        return self.put(self.base_endpoint, json=data)
+
+    def find_pet_by_status(self, status):
+        endpoint = f"{self.base_endpoint}/findByStatus?status={status}"
+        if not isinstance(status, list) and len(status) < 1:
+            raise ValueError("Значение status должно быть списком строк.")
+        for i in status:
+            if not isinstance(i, str) or i not in ["available", "pending", "sold"]:
+                raise ValueError(
+                    "Значение status должно быть списком строк. Возможные значения: available, pending, sold.")
+        return self.get(endpoint)
+
+    def find_pet_by_id(self, id=0):
+        endpoint = f"{self.base_endpoint}/{id}"
+        if not isinstance(id, int) or id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        return self.get(endpoint)
+
+    def update_pet_with_form_data(self, id):
+        endpoint = f"{self.base_endpoint}/{id}"
+        if not isinstance(id, int) or id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        return self.post(endpoint)
+
+    def delete_pet(self, id):
+        endpoint = f"{self.base_endpoint}/{id}"
+        if not isinstance(id, int) or id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        return self.delete(endpoint)
+
+
+"""
+---------------------------------------------------------------------------------------------------
+pet_client=PetClient()
+print(pet_client.add_new_pet(id=355).json())
+time.sleep(3)
+print(pet_client.find_pet_by_id(355).json())
+print(pet_client.find_pet_by_status("available").json())
+print(pet_client.update_pet(update_pet_data).json())
+print(pet_client.find_pet_by_id(45).json())
+print(pet_client.find_pet_by_status("sold").json())
+print(pet_client.update_pet_with_form_data(45).json())
+print(pet_client.find_pet_by_id(45).json())
+print(pet_client.delete_pet(45).json())
+print(pet_client.find_pet_by_id(45).json())
+
+-------------------------------------------------------------------------------------------------------
+"""
