@@ -1,5 +1,6 @@
 from petstore.http_client import HttpClient
 import time
+from models import Pet, PetMessage
 
 
 class PetClient(HttpClient):
@@ -8,6 +9,47 @@ class PetClient(HttpClient):
         super().__init__()
         self.base_endpoint = "/pet"
 
+    def add_new_pet(self, **pet_data):
+        response = self.post(self.base_endpoint, json=pet_data)
+        response.raise_for_status()
+        return Pet(**response.json())
+
+    def update_pet(self, **pet_data):
+        response = self.put(self.base_endpoint, json=pet_data)
+        response.raise_for_status()
+        return Pet(**response.json())
+
+    def find_pet_by_status(self, status):
+        if isinstance(status, list):
+            status_params = [f"status={s}" for s in status]
+            statuses = "&".join(status_params)
+        else:
+            statuses = f"status={status}"
+        endpoint = f"{self.base_endpoint}/findByStatus?{statuses}"
+        response = self.get(endpoint)
+        response.raise_for_status()
+        return [Pet(**pet_data) for pet_data in response.json()]
+
+    def find_pet_by_id(self, id=0):
+        endpoint = f"{self.base_endpoint}/{id}"
+        response = self.get(endpoint)
+        response.raise_for_status()
+        return Pet(**response.json())
+
+    def update_pet_with_form_data(self, id):
+        endpoint = f"{self.base_endpoint}/{id}"
+        response = self.post(endpoint)
+        response.raise_for_status()
+        return PetMessage(**response.json())
+
+    def delete_pet(self, id):
+        endpoint = f"{self.base_endpoint}/{id}"
+        response = self.delete(endpoint)
+        response.raise_for_status()
+        return PetMessage(**response.json())
+
+
+"""
     def add_new_pet(self, **pet_data):
         data = {}
         pet_id = pet_data.get("id", 1)
@@ -26,9 +68,14 @@ class PetClient(HttpClient):
         data["tags"] = tags
         data["status"] = pet_data.get("status", "status_unknown")
         return self.post(self.base_endpoint, json=data)
+        
+    def find_pet_by_id(self, id=0):
+        endpoint = f"{self.base_endpoint}/{id}"
+        if not isinstance(id, int) or id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        return self.get(endpoint)
 
-    def update_pet(self, **pet_data):
-        data = {}
+   def update_pet(self, **pet_data):
         data = {}
         pet_id = pet_data.get("id")
         if not isinstance(pet_id, int) or pet_id < 0:
@@ -47,8 +94,20 @@ class PetClient(HttpClient):
         data["tags"] = tags
         data["status"] = pet_data.get("status", "status_unknown")
         return self.put(self.base_endpoint, json=data)
-
-    def find_pet_by_status(self, status):
+        
+   def update_pet_with_form_data(self, id):
+    endpoint = f"{self.base_endpoint}/{id}"
+    if not isinstance(id, int) or id < 0:
+        raise ValueError("Значение ID должно быть целым положительным числом.")
+    return self.post(endpoint)     
+    
+    
+    def delete_pet(self, id):
+        endpoint = f"{self.base_endpoint}/{id}"
+        if not isinstance(id, int) or id < 0:
+            raise ValueError("Значение ID должно быть целым положительным числом.")
+        return self.delete(endpoint)
+        def find_pet_by_status(self, status):
         endpoint = f"{self.base_endpoint}/findByStatus?status={status}"
         if not isinstance(status, list) and len(status) < 1:
             raise ValueError("Значение status должно быть списком строк.")
@@ -57,27 +116,6 @@ class PetClient(HttpClient):
                 raise ValueError(
                     "Значение status должно быть списком строк. Возможные значения: available, pending, sold.")
         return self.get(endpoint)
-
-    def find_pet_by_id(self, id=0):
-        endpoint = f"{self.base_endpoint}/{id}"
-        if not isinstance(id, int) or id < 0:
-            raise ValueError("Значение ID должно быть целым положительным числом.")
-        return self.get(endpoint)
-
-    def update_pet_with_form_data(self, id):
-        endpoint = f"{self.base_endpoint}/{id}"
-        if not isinstance(id, int) or id < 0:
-            raise ValueError("Значение ID должно быть целым положительным числом.")
-        return self.post(endpoint)
-
-    def delete_pet(self, id):
-        endpoint = f"{self.base_endpoint}/{id}"
-        if not isinstance(id, int) or id < 0:
-            raise ValueError("Значение ID должно быть целым положительным числом.")
-        return self.delete(endpoint)
-
-
-"""
 ---------------------------------------------------------------------------------------------------
 pet_client=PetClient()
 print(pet_client.add_new_pet(id=355).json())

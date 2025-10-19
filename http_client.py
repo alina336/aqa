@@ -1,4 +1,5 @@
 import requests
+import logging
 
 url = "https://petstore.swagger.io/v2"
 
@@ -6,10 +7,16 @@ url = "https://petstore.swagger.io/v2"
 class HttpClient:
     def __init__(self):
         self.url = url
-        self.session = requests.Session()
+        self.session = requests.Session()  # Создание сессии для повторного использования соединений
+        self.logger = logging.getLogger(__name__)
 
-    def _request(self, method, endpoint, json=None):
-        return self.session.request(method, endpoint, json=json)
+    def _request(self, method, endpoint, **kwargs):
+        self.logger.info(f"Request: {method} {endpoint}.")
+        if 'json' in kwargs:
+            self.logger.info(f" Переданы параметры: {kwargs['json']}")
+        response = self.session.request(method, endpoint, **kwargs)
+        self.logger.info(f"Response: {response.status_code} - {response.text}.")
+        return response
 
     def get(self, endpoint):
         return self._request("GET", f"{url}{endpoint}")
