@@ -1,4 +1,5 @@
 from deepdiff import DeepDiff
+from pet_data_generator import PetDataGenerator
 
 def test_add_pet_exact_match(pet_client):
     # Самый базовый вариант с переопределением нужных полей)
