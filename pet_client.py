@@ -1,24 +1,27 @@
 from petstore.http_client import HttpClient
-import time
-from models import Pet, PetMessage
+import allure
+from petstore.models import Pet, PetMessage
 
 
 class PetClient(HttpClient):
 
     def __init__(self):
-        super().__init__()
+        super().__init__(url="https://petstore.swagger.io/v2")
         self.base_endpoint = "/pet"
 
+    @allure.step("Add new pet")
     def add_new_pet(self, **pet_data):
         response = self.post(self.base_endpoint, json=pet_data)
         response.raise_for_status()
         return Pet(**response.json())
 
+    @allure.step("Update existing pet")
     def update_pet(self, **pet_data):
         response = self.put(self.base_endpoint, json=pet_data)
         response.raise_for_status()
         return Pet(**response.json())
 
+    @allure.step("Get existing pets by status")
     def find_pet_by_status(self, status):
         if isinstance(status, list):
             status_params = [f"status={s}" for s in status]
@@ -30,18 +33,21 @@ class PetClient(HttpClient):
         response.raise_for_status()
         return [Pet(**pet_data) for pet_data in response.json()]
 
+    @allure.step("Get existing pet by id")
     def find_pet_by_id(self, id=0):
         endpoint = f"{self.base_endpoint}/{id}"
         response = self.get(endpoint)
         response.raise_for_status()
         return Pet(**response.json())
 
+    @allure.step("Update existing pet with form data")
     def update_pet_with_form_data(self, id):
         endpoint = f"{self.base_endpoint}/{id}"
         response = self.post(endpoint)
         response.raise_for_status()
         return PetMessage(**response.json())
 
+    @allure.step("Delete existing pet")
     def delete_pet(self, id):
         endpoint = f"{self.base_endpoint}/{id}"
         response = self.delete(endpoint)

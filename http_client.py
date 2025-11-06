@@ -1,11 +1,10 @@
 import requests
 import logging
-
-url = "https://petstore.swagger.io/v2"
+import allure
 
 
 class HttpClient:
-    def __init__(self):
+    def __init__(self, url):
         self.url = url
         self.session = requests.Session()  # Создание сессии для повторного использования соединений
         self.logger = logging.getLogger(__name__)
@@ -14,21 +13,29 @@ class HttpClient:
         self.logger.info(f"Request: {method} {endpoint}.")
         if 'json' in kwargs:
             self.logger.info(f" Переданы параметры: {kwargs['json']}")
-        response = self.session.request(method, endpoint, **kwargs)
-        self.logger.info(f"Response: {response.status_code} - {response.text}.")
-        return response
+        try:
+            response = self.session.request(method, endpoint, **kwargs)
+            self.logger.info(f"Response: {response.status_code} - {response.text}.")
+            return response
+        except Exception as e:
+            self.logger.error(f"ERROR: {str(e)}")
+            raise
 
+    @allure.step("Make GET request to {endpoint}")
     def get(self, endpoint):
-        return self._request("GET", f"{url}{endpoint}")
+        return self._request("GET", f"{self.url}{endpoint}")
 
+    @allure.step("Make POST request to {endpoint}")
     def post(self, endpoint, json=None):
-        return self._request("POST", f"{url}{endpoint}", json=json)
+        return self._request("POST", f"{self.url}{endpoint}", json=json)
 
+    @allure.step("Make PUT request to {endpoint}")
     def put(self, endpoint, json):
-        return self._request("PUT", f"{url}{endpoint}", json=json)
+        return self._request("PUT", f"{self.url}{endpoint}", json=json)
 
+    @allure.step("Make DELETE request to {endpoint}")
     def delete(self, endpoint):
-        return self._request("DELETE", f"{url}{endpoint}")
+        return self._request("DELETE", f"{self.url}{endpoint}")
 
 
 """
