@@ -40,10 +40,15 @@ class PetClient(HttpClient):
         response.raise_for_status()
         return Pet(**response.json())
 
-    @allure.step("Update existing pet with form data")
-    def update_pet_with_form_data(self, id):
-        endpoint = f"{self.base_endpoint}/{id}"
-        response = self.post(endpoint)
+    @allure.step("Update pet with form data")
+    def update_pet_with_form_data(self, pet_id, name=None, status=None):
+        endpoint = f"{self.base_endpoint}/{pet_id}"
+        form_data={}
+        if name is not None:
+            form_data['name'] = name
+        if status is not None:
+            form_data['status'] = status
+        response = self.post(endpoint, data=form_data)
         response.raise_for_status()
         return PetMessage(**response.json())
 

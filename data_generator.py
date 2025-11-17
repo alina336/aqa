@@ -5,7 +5,6 @@ fake = Faker()
 
 
 class PetDataGenerator:
-
     categories = ["cat", "dog", "lemur", "bird", "fish", "hamster"]
     tags = ["puppy", "cute", "kitty", "funny", "rare_breed"]
     statuses = ["available", "sold", "pending"]
@@ -57,5 +56,48 @@ class PetDataGenerator:
             "tags": PetDataGenerator.tags_generator(),
             "status": PetDataGenerator.status_generator(),
         }
+        if overrides.get('only_specified'):
+            return overrides
         data.update(overrides)
         return data
+
+    @staticmethod
+    def generate_full_pet():
+        return PetDataGenerator.generate_pet()
+
+
+class DataMapper:
+    @staticmethod
+    def map_to_tables(pet_data):
+        pets_table = {
+            "id": pet_data["id"],
+            "status": pet_data["status"],
+            "name": pet_data["name"]
+        }
+
+        tags_table = []
+        for tag in pet_data.get("tags", []):
+            tags_table.append({
+                "id": tag["id"],
+                "name": tag["name"],
+                "pet_id": pet_data["id"]
+            })
+
+        urls_table = []
+        for photo_url in pet_data.get("photoUrls", []):
+            urls_table.append({
+                "url": photo_url,
+                "pet_id": pet_data["id"]
+            })
+
+        categories_table = {
+            "id": pet_data["category"]["id"],
+            "name": pet_data["category"]["name"],
+            "pet_id": pet_data["id"]
+        }
+        return {
+            "pets": pets_table,
+            "categories": categories_table,
+            "tags": tags_table,
+            "photos": urls_table
+        }

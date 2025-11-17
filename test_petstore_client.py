@@ -31,7 +31,7 @@ def test_mock_delete_pet(pet_client):
 @responses.activate
 @allure.title("Mock-тест обновления питомца: id, status, tags")
 def test_mock_update_pet(pet_client):
-    random_pet = PetDataGenerator.generate_pet(id=PetDataGenerator.id_generator(),
+    random_pet = PetDataGenerator.generate_pet(only_specified=True, id=PetDataGenerator.id_generator(),
                                                status=PetDataGenerator.status_generator(),
                                                tags=PetDataGenerator.tags_generator())
     responses.add(method=responses.PUT, url="https://petstore.swagger.io/v2/pet",
@@ -44,22 +44,20 @@ def test_mock_update_pet(pet_client):
 """Позитивные тесты"""
 
 
-@pytest.mark.parametrize("input_data", [({"id": PetDataGenerator.id_generator()})])
 @allure.severity(allure.severity_level.CRITICAL)
-@pytest.mark.smoke
 @allure.tag("create", "pet")
 @allure.description("Тест проверяет создание питомца по id:"
                     "* создание питомца "
                     "* проверка успешности его создания")
 @allure.title("Тест создания питомца по id")
-def test_add_pet_by_id_positive(input_data, pet_client):
+def test_add_pet_positive(pet_client):
+    input_data = PetDataGenerator.generate_full_pet()
     pet = pet_client.add_new_pet(**input_data)
     print(pet.dict())
     assert pet.id == input_data["id"]
 
 
 @allure.severity(allure.severity_level.CRITICAL)
-@pytest.mark.smoke
 @allure.tag("create", "pet")
 @allure.description("Тест проверяет создание питомца по имени и статусу:"
                     "* создание питомца"
@@ -76,7 +74,6 @@ def test_add_pet_exact_match(pet_client):
 
 
 @allure.severity(allure.severity_level.CRITICAL)
-@pytest.mark.smoke
 @allure.tag("update", "pet")
 @allure.description("Тест проверяет изменение статуса питомца по его id:"
                     "* обновление статуса питомца"
@@ -84,7 +81,7 @@ def test_add_pet_exact_match(pet_client):
                     "* сравнивнение данных с помощью DeepDiff")
 @allure.title("Тест обновления статуса питомца по id")
 def test_update_pet_positive(pet_client):
-    input_data = PetDataGenerator.generate_pet(id=1, status="sold")
+    input_data = PetDataGenerator.generate_pet()
     updated_pet = pet_client.update_pet(**input_data)
     output_data = updated_pet.dict()
     print(updated_pet.dict())
@@ -96,7 +93,6 @@ def test_update_pet_positive(pet_client):
                          [PetDataGenerator.status_generator()],
                          ids=["test find pet by status"])
 @allure.severity(allure.severity_level.CRITICAL)
-@pytest.mark.smoke
 @allure.tag("find", "pet")
 @allure.description("Тест проверяет получение информации о питомце по его статусу:"
                     "* получение данных о питомце"
@@ -109,7 +105,6 @@ def test_find_pet_by_status_positive(input_data, pet_client):
 
 @pytest.mark.parametrize("input_data", [PetDataGenerator.id_generator()], ids=["test find pet by id"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("get", "pet")
 @allure.description("Тест проверяет поиск питомца по id:"
                     "* создание питомца по id"
@@ -123,25 +118,23 @@ def test_find_pet_by_id_positive(input_data, pet_client):
     assert pet.id == input_data
 
 
-@pytest.mark.parametrize("input_data", [PetDataGenerator.id_generator()], ids=["test update pet with form data by id"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("update", "pet")
 @allure.description("Тест проверяет обновление информации о питомце данными по умолчанию:"
                     "* создание питомца по id"
                     "* обновление данных о питомце данными по умолчанию"
                     "* проверка успешности обновления данных о питомце")
 @allure.title("Тест обновление информации о питомце данными по умолчанию")
-def test_update_pet_with_form_data_positive(input_data, pet_client):
-    pet_client.add_new_pet(id=input_data)
+def test_update_pet_with_form_data_positive(pet_client):
+    rand_id = PetDataGenerator.id_generator()
+    pet_client.add_new_pet(id=rand_id)
     time.sleep(15)
-    pet = pet_client.update_pet_with_form_data(input_data)
-    assert pet.message == str(input_data)
+    pet = pet_client.update_pet_with_form_data(pet_id=rand_id, name="Buddy", status="sold")
+    assert pet.message == str(rand_id)
 
 
 @pytest.mark.parametrize("input_data", [PetDataGenerator.id_generator()], ids=["test delete pet by id"])
 @allure.severity(allure.severity_level.CRITICAL)
-@pytest.mark.smoke
 @allure.tag("delete", "pet")
 @allure.description("Тест проверяет удаление питомца по id:"
                     "* создание питомца по id"
@@ -164,7 +157,6 @@ def test_delete_pet_positive(input_data, pet_client):
                                           "status": "available", "photoUrls": ["url"]}), ],
                          ids=["test add pet by wrong category type", "test by all parameters"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("create", "pet", "negative")
 @allure.description("Тест проверяет создание питомца с некорректными данными:")
 @allure.title("Негативный тест добавления питомца с некорректными данными.")
@@ -179,7 +171,6 @@ def test_add_pet_negative(input_data, pet_client):
                          ids=["test update pet`s name with wrong id type", "test update pet`s category with wrong type",
                               "test update pet`s info with wrong tags type"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("update", "pet", "negative")
 @allure.description("Тест проверяет обновление питомца некорректными данными:")
 @allure.title("Негативный тест обновления питомца некорректными данными.")
@@ -192,7 +183,6 @@ def test_update_pet_negative(input_data, pet_client):
                          ids=["test find pet by id with negative number", "test find pet by None id",
                               "test find pet by empty id"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("find", "pet", "negative")
 @allure.description("Тест проверяет получение данных о питомце по некорректному id:")
 @allure.title("Негативный тест получения данных о питомце по некорректному id.")
@@ -206,7 +196,6 @@ def test_find_pet_by_id_negative(input_data, pet_client):
                          ids=["test find pet by non-existent status", "test find pet by empty status",
                               "test find pet by statuses list with int"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("find", "pet", "negative")
 @allure.description("Тест проверяет получение данных о питомце по некорректному статусу:")
 @allure.title("Негативный тест получения данных о питомце по некорректному статусу.")
@@ -217,7 +206,6 @@ def test_find_pet_by_status_negative(input_data, pet_client):
 
 @pytest.mark.parametrize("input_data", [PetDataGenerator.invalid_id_generator()], ids=["test find pet by invalid_id"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("delete", "pet", "negative")
 @allure.description("Тест проверяет удаление данных о питомце по некорректному id:")
 @allure.title("Негативный тест удаления данных о питомце по некорректному id.")
@@ -229,7 +217,6 @@ def test_delete_pet_negative(input_data, pet_client):
 @pytest.mark.parametrize("input_data", [PetDataGenerator.invalid_id_generator()],
                          ids=["test update pet with form data by invalid_id"])
 @allure.severity(allure.severity_level.NORMAL)
-@pytest.mark.smoke
 @allure.tag("update", "pet", "negative")
 @allure.description("Тест проверяет удаление данных о питомце по некорректному id:")
 @allure.title("Негативный тест обновления данных о питомце по некорректному id.")

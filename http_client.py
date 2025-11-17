@@ -1,5 +1,5 @@
 import requests
-import logging
+from petstore.logging_config import logger
 import allure
 
 
@@ -7,7 +7,7 @@ class HttpClient:
     def __init__(self, url):
         self.url = url
         self.session = requests.Session()  # Создание сессии для повторного использования соединений
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
 
     def _request(self, method, endpoint, **kwargs):
         self.logger.info(f"Request: {method} {endpoint}.")
@@ -26,8 +26,8 @@ class HttpClient:
         return self._request("GET", f"{self.url}{endpoint}")
 
     @allure.step("Make POST request to {endpoint}")
-    def post(self, endpoint, json=None):
-        return self._request("POST", f"{self.url}{endpoint}", json=json)
+    def post(self, endpoint, json=None, data=None):
+        return self._request("POST", f"{self.url}{endpoint}", json=json, data=data)
 
     @allure.step("Make PUT request to {endpoint}")
     def put(self, endpoint, json):

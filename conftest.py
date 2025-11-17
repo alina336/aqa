@@ -1,12 +1,10 @@
 import logging
 from datetime import datetime
 import pytest
-from petstore.logging_config import setup_logging
+from petstore.logging_config import logger
 from petstore.pet_client import PetClient
-
-
-def pytest_configure(config):
-    setup_logging()
+import psycopg2
+from petstore.database_client import DBClient
 
 
 @pytest.fixture(scope="module")
@@ -17,24 +15,23 @@ def pet_client():
 
 @pytest.fixture(scope="session", autouse=True)
 def prepare_test_environment():
-    print("Подготовка тестовых данных.")
+    logger.info("Подготовка тестовых данных.")
     yield
-    print("Удаление тестовых данных.")
+    logger.info("Удаление тестовых данных.")
 
 
 @pytest.fixture(scope="session", autouse=True)
 def log_session_setup():
-    logger = logging.getLogger("conftest")
     logger.info("=" * 60)
     logger.info("НАЧАЛО СЕССИИ")
     yield
     logger.info("ЗАВЕРШЕНИЕ СЕССИИ")
     logger.info("=" * 60)
 
+
 @pytest.fixture(autouse=True)
 def log_test(request):
     test_name = request.node.name
-    logger = logging.getLogger(test_name)
     start_time = datetime.now()
     logger.info(f"НАЧАЛО ТЕСТА {test_name}")
     yield
@@ -43,3 +40,12 @@ def log_test(request):
     logger.info(f"ЗАВЕРШЕНИЕ ТЕСТА: {test_name} | Время: {duration:.2f} сек")
 
 
+@pytest.fixture(scope="session")
+def cursor():
+    with DBClient(host="localhost",
+                  port=5432,
+                  database="mytestdb",
+                  user="postgres",
+                  password="PASSWORD") as db:
+        yield db
+    logger.info("Удаление клиента")
