@@ -1,0 +1,103 @@
+from faker import Faker
+import random
+
+fake = Faker()
+
+
+class PetDataGenerator:
+    categories = ["cat", "dog", "lemur", "bird", "fish", "hamster"]
+    tags = ["puppy", "cute", "kitty", "funny", "rare_breed"]
+    statuses = ["available", "sold", "pending"]
+    invalid_id = ["", -1, None]
+
+    @staticmethod
+    def id_generator():
+        return random.randint(1, 1000)
+
+    @staticmethod
+    def invalid_id_generator():
+        return random.choice(PetDataGenerator.invalid_id)
+
+    @staticmethod
+    def name_generator():
+        return fake.first_name()
+
+    @staticmethod
+    def category_generator():
+        return {
+            "id": PetDataGenerator.id_generator(),
+            "name": random.choice(PetDataGenerator.categories)
+        }
+
+    @staticmethod
+    def photo_urls_generator():
+        return [fake.image_url() for _ in range(random.randint(0, 3))]
+
+    @staticmethod
+    def tags_generator():
+        return [
+            {
+                "id": PetDataGenerator.id_generator(),
+                "name": random.choice(PetDataGenerator.tags)
+            }
+        ]
+
+    @staticmethod
+    def status_generator():
+        return random.choice(PetDataGenerator.statuses)
+
+    @staticmethod
+    def generate_pet(**overrides):
+        data = {
+            "id": PetDataGenerator.id_generator(),
+            "category": PetDataGenerator.category_generator(),
+            "name": PetDataGenerator.name_generator(),
+            "photoUrls": PetDataGenerator.photo_urls_generator(),
+            "tags": PetDataGenerator.tags_generator(),
+            "status": PetDataGenerator.status_generator(),
+        }
+        if overrides.get('only_specified'):
+            return overrides
+        data.update(overrides)
+        return data
+
+    @staticmethod
+    def generate_full_pet():
+        return PetDataGenerator.generate_pet()
+
+
+# class DataMapper:
+#     @staticmethod
+#     def map_to_tables(pet_data):
+#         pets_table = {
+#             "id": pet_data["id"],
+#             "status": pet_data["status"],
+#             "name": pet_data["name"]
+#         }
+#
+#         tags_table = []
+#         for tag in pet_data.get("tags", []):
+#             tags_table.append({
+#                 "id": tag["id"],
+#                 "name": tag["name"],
+#                 "pet_id": pet_data["id"]
+#             })
+#
+#         urls_table = []
+#         for photo_url in pet_data.get("photoUrls", []):
+#             urls_table.append({
+#                 "url": photo_url,
+#                 "pet_id": pet_data["id"]
+#             })
+#
+#         categories_table = {
+#             "id": pet_data["category"]["id"],
+#             "name": pet_data["category"]["name"],
+#             "pet_id": pet_data["id"]
+#         }
+#         return {
+#             "pets": pets_table,
+#             "categories": categories_table,
+#             "tags": tags_table,
+#             "photos": urls_table
+#         }
